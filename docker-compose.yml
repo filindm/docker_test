@@ -1,0 +1,25 @@
+redis:
+  container_name: redis
+  image: redis:3.2.8
+
+celery:
+  container_name: celery
+  build: app
+  environment:
+    - CELERY_RESULT_BACKEND=redis://redis:6379
+    - CELERY_BROKER_URL=redis://redis:6379
+  command: celery -A app.celery worker --loglevel=info
+  links:
+    - redis:redis
+
+app:
+  container_name: app
+  build: app
+  ports:
+    - 5000:5000
+  environment:
+    - CELERY_RESULT_BACKEND=redis://redis:6379
+    - CELERY_BROKER_URL=redis://redis:6379
+  command: python app.py
+  links:
+    - redis:redis
